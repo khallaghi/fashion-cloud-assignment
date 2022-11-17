@@ -21,6 +21,7 @@
     "dotenv": "latest",
     "express": "latest",
     "mongoose": "latest",
-    "nodemon": "latest"
+    "nodemon": "latest",
+    "moment": "latest"
   }
 }

@@ -1,26 +1,40 @@
 const Model = require('../models/model');
-const utils = require('./utils/utils');
+const utils = require('../utils/utils');
+const moment = require('moment')
 
 const CacheTool = function () {
     this.retrieve = async function (key) {
-        const record = await Model.findOne({key: key}).exec()
-        return record['value'];
+        return await Model.findOne({key: key}).exec();
     }
+
+    this.isTtlExceeded = function (record) {
+        return Date.now() > record.ttl;
+    }
+
+    this.handleMissedCache = async function (key) {
+        console.log('cache miss')
+        await this.addOrUpdateRecord({
+            key: key,
+            value: utils.randomgen(20)
+        });
+        return await this.retrieve(key)['value'];
+    }
+
 
     this.retrieveAndUpdate = async function (key) {
         try {
-            const value = await this.retrieve(key);
+            const record = await this.retrieve(key);
+            await this.updateCreatedAt(record)
             console.log('cache hit')
-            return value
-
+            return record['value'];
         } catch (error) {
-            console.log('cache miss')
-            await this.addOrUpdateRecord({
-                key: key,
-                value: utils.randomgen(20)
-            });
-            return this.retrieve(key);
+            return this.handleMissedCache(key);
         }
+    }
+
+    this.updateCreatedAt = async function (record) {
+        record.createdAt = Date.now()
+        await this.addOrUpdateRecord(record)
     }
 
     this.addOrUpdateRecord = async function (record) {
@@ -35,16 +49,16 @@ const CacheTool = function () {
 
     this.retrieveAll = async function () {
         // TODO: Should paginate the return value
-        return await Model.find({}, 'key value -_id').exec();
+        await Model.find({}, 'key value -_id').exec();
     }
 
     this.deleteOne = async function (key) {
         return Model.deleteOne({key: key});
     }
 
-   this.deleteAll = async function () {
+    this.deleteAll = async function () {
         return Model.deleteMany();
-   }
+    }
 }
 
 module.exports = new CacheTool()

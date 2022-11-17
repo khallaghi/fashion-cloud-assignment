@@ -1,5 +1,5 @@
 const mongoose = require('mongoose')
-const utils = require('../controllers/utils/utils')
+const utils = require('../utils/utils')
 
 const dataSchema = new mongoose.Schema({
     key: {
@@ -12,9 +12,11 @@ const dataSchema = new mongoose.Schema({
         type: String,
         default: utils.randomgen(20)
     },
-    ttl: {
-        require: false,
-        type: Date
+    createdAt: {
+        require: true,
+        type: Date,
+        expires: utils.getDefaultTTL(),
+        default: Date.now()
     }
 })
 

@@ -3,8 +3,7 @@ const router = express.Router();
 module.exports = router;
 const cacheTool = require('../controllers/cache')
 
-router.get('/get/:key', async (req, res) => {
-    console.log("HERE")
+router.get('/key/:key', async (req, res) => {
     try {
         const value = await cacheTool.retrieveAndUpdate(req.params.key)
         res.status(200).json({value: value})

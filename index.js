@@ -9,7 +9,7 @@ function setupServer() {
 
     const app = express();
     app.use(express.json());
-
+    // TODO: put the port number in .env alongside username and password
     app.listen(3000, () => {
         console.log(`Server started at ${3000}`)
     });
