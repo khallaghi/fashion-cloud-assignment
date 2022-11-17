@@ -7,9 +7,6 @@ const CacheTool = function () {
         return await Model.findOne({key: key}).exec();
     }
 
-    this.isTtlExceeded = function (record) {
-        return Date.now() > record.ttl;
-    }
 
     this.handleMissedCache = async function (key) {
         console.log('cache miss')
@@ -37,27 +34,50 @@ const CacheTool = function () {
         await this.addOrUpdateRecord(record)
     }
 
+    this.checkAndReduceCacheSize = async function(record) {
+        // In this function I delete a record if the size of the cache reached to its maximum capacity
+        // The strategy to delete is simply by finding the oldest record that viewed and delete it.
+        // Also note that since I use expires feature of mongo which delete the documents that reach the end of
+        // their life some old records even before calling this function have been removed
+
+        const size = parseInt(process.env.CACHE_SIZE)
+        const currentSize = await Model.countDocuments();
+        if (currentSize >= size) {
+            Model.findOne().sort('-created_at').exec((err, rec) => {
+               Model.deleteOne(record).exec((err, rec) => {
+                   console.log('record deleted due to lack of space:')
+                   console.log(rec)
+               })
+            })
+        }
+    }
+
+    this.addNewRecord = async function(record) {
+        await this.checkAndReduceCacheSize()
+        const data = new Model(record);
+        return await data.save()
+    }
+
     this.addOrUpdateRecord = async function (record) {
         let doc = await Model.findOne({key: record.key}).exec();
         if (doc != null) {
             doc.overwrite(record)
-        } else {
-            doc = new Model(record);
+            return await doc.save()
         }
-        return await doc.save()
+        return await this.addNewRecord(record)
     }
 
     this.retrieveAll = async function () {
         // TODO: Should paginate the return value
-        await Model.find({}, 'key value -_id').exec();
+        return await Model.find({}, 'key value -_id').exec();
     }
 
     this.deleteOne = async function (key) {
-        return Model.deleteOne({key: key});
+        return Model.deleteOne({key: key}).exec();
     }
 
     this.deleteAll = async function () {
-        return Model.deleteMany();
+        return Model.deleteMany().exec();
     }
 }
 

@@ -12,7 +12,7 @@ const Utils = function() {
     }
 
     this.getDefaultTTL = function () {
-        return parseInt(process.env.TTL_OFFSET);
+        return process.env.TTL_OFFSET + process.env.TTL_UNIT;
     }
 }
 module.exports = new Utils();
