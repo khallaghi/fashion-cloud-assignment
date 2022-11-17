@@ -22,3 +22,23 @@ router.get('/all', async (req, res) => {
     }
 });
 
+router.put('', async (req, res) => {
+    try {
+        // TODO: Validate req.body
+        const result = await cacheTool.addOrUpdateRecord(req.body);
+        res.status(200).json(result)
+    } catch (error) {
+        res.status(400).json({message: error.message})
+    }
+});
+
+router.delete('/key/:key', async (req, res) => {
+    try {
+        const result = await cacheTool.deleteOne(req.params.key);
+        res.status(200).json({result: result})
+    } catch (error) {
+        res.status(400).json({message: error.message})
+    }
+});
+
+

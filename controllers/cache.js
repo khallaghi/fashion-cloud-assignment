@@ -1,7 +1,9 @@
+
+
 const Model = require('../models/model');
 const utils = require('./utils/utils');
 
-const CacheTool = function() {
+const CacheTool = function () {
     this.retrieve = async function (key) {
         const record = await Model.findOne({key: key}).exec()
         return record['value'];
@@ -15,7 +17,7 @@ const CacheTool = function() {
 
         } catch (error) {
             console.log('cache miss')
-            await this.addRecord({
+            await this.addOrUpdateRecord({
                 key: key,
                 value: utils.randomgen(20)
             });
@@ -23,9 +25,14 @@ const CacheTool = function() {
         }
     }
 
-    this.addRecord = async function (record) {
-        const data = new Model(record);
-        await data.save();
+    this.addOrUpdateRecord = async function (record) {
+        let doc = await Model.findOne({key: record.key}).exec();
+        if (doc != null) {
+            doc.overwrite(record)
+        } else {
+            doc = new Model(record);
+        }
+        return await doc.save()
     }
 
     this.retrieveAll = async function () {
@@ -33,6 +40,9 @@ const CacheTool = function() {
         return await Model.find({}, 'key value -_id').exec();
     }
 
+    this.deleteOne = async function (key) {
+        return Model.deleteOne({key: key});
+    }
 
 }
 
