@@ -13,8 +13,8 @@ function setupServer() {
     app.listen(port, () => {
         console.log(`Server started at ${port}`)
     });
-    const routes = require('./routes/routes');
-    app.use('/api', routes)
+    const routes = require('./src/routes/routes');
+    app.use('/v1', routes)
 }
 
 function configDatabase() {
