@@ -1,5 +1,3 @@
-
-
 const Model = require('../models/model');
 const utils = require('./utils/utils');
 
@@ -44,6 +42,9 @@ const CacheTool = function () {
         return Model.deleteOne({key: key});
     }
 
+   this.deleteAll = async function () {
+        return Model.deleteMany();
+   }
 }
 
 module.exports = new CacheTool()

@@ -41,4 +41,13 @@ router.delete('/key/:key', async (req, res) => {
     }
 });
 
+router.delete('/all', async (req, res) => {
+    try {
+        const result = await cacheTool.deleteAll();
+        res.status(200).json({result: result})
+    } catch (error) {
+        res.status(400).json({message: error.message})
+    }
+});
+
 
